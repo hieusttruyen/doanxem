@@ -5,7 +5,7 @@ from lib import FindImgInWindow, FindImg, getWindow, PressKey
 from pywinauto.application import Application
 
 
-def Reconnect(window, path_game):
+def Reconnect(window):
     print("Kiểm tra kết nối...")
     try:
         img = Image.open("./img/reconnect.png")
@@ -15,13 +15,15 @@ def Reconnect(window, path_game):
             x, y = point
             pyautogui.click(x, y)
             time.sleep(5)
-            StartRok(path_game)
+            window_title = "Rise of Kingdoms"
+            StartRok(window_title)
     except Exception as ex:
         print("ERROR: ", ex)
 
 
-def StartRok(path, window_title):
+def StartRok(window_title):
     try:
+        path = sys.argv[1] + "\launcher.exe"
         app = Application()
         print("Khởi động launcher")
         app.start(path)
@@ -183,6 +185,7 @@ def FindGems(window, directions, new):
             print("Lỗi zoom...")
             return None
         while True:
+            Reconnect(window)
             if dem > 5:
                 dem = 0
             left, down, right, up = 2 + dem * 2, 1 + dem * 2, 1 + dem * 2, 2 + dem * 2
@@ -239,7 +242,7 @@ def Farming(window, team_number, i):
                 for i in range(5):
                     pyautogui.click(x, y + yy)
                     time.sleep(2)
-                    print(x, y + yy)
+                    # print(x, y + yy)
                     yy = yy + 49
                 return True
         return False
@@ -263,7 +266,9 @@ def Farming(window, team_number, i):
             pyautogui.click(x, y)
             time.sleep(2)
         img_running = (
-            Image.open("./img//running_new.png") if new else Image.open("./img//running.png")
+            Image.open("./img//running_new.png")
+            if new
+            else Image.open("./img//running.png")
         )
         locations = FindImgInWindow(window, img_running, threshold=0.8)
         if locations:
@@ -278,6 +283,7 @@ def RunFarm(window, base_x, base_y, team_number, number_team):
     d_up = 0
     directions = []
     while True:
+        Reconnect(window)
         ResetHome(window)
         new = base_x == 0 and base_y == 0
         if not new:
@@ -286,7 +292,7 @@ def RunFarm(window, base_x, base_y, team_number, number_team):
         point, direction, dem = FindGems(window, directions, new)
         if point:
             time.sleep(2)
-            print("farm gem")
+            # print("farm gem")
             time.sleep(2)
             if Farming(window, team_number, number_team):
                 time.sleep(5)
@@ -343,11 +349,11 @@ def RunApp(path, team_number=5):
         if window:
             window.set_focus()
             while True:
-                Reconnect(window, path_game)
+                Reconnect(window)
                 StartFarm(window, team_number)
                 time.sleep(10)
         else:
-            StartRok(path_game, window_title)
+            StartRok(window_title)
     except Exception as ex:
         print("ERROR: ", ex)
 

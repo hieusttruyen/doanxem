@@ -1,6 +1,6 @@
-PyQt5==5.15.4
-pywinauto==0.6.8
-opencv-python==4.5.3.56
-numpy==1.21.2
-pyautogui==0.9.53
-Pillow==8.3.1
+PyQt5>=5.15.11
+pywinauto>=0.6.8
+opencv-python>=4.10.0.84
+numpy>=2.0.1
+pyautogui>=0.9.54
+Pillow>=10.4.0

@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import json
 from PyQt5.QtWidgets import (
     QApplication,
     QWidget,
@@ -14,10 +15,13 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 
+SETTINGS_FILE = "settings.json"
+
 class App(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.load_settings()
         self.process = None
 
     def initUI(self):
@@ -28,9 +32,6 @@ class App(QWidget):
         path_layout = QHBoxLayout()
         self.label_path = QLabel("Path:")
         self.input_path = QLineEdit()
-        self.input_path.setText(
-            r"D:\Games\Rise of Kingdoms"
-        )  # Thiết lập giá trị mặc định
         self.button_browse = QPushButton("Browse")
         self.button_browse.clicked.connect(self.browse_path)
         path_layout.addWidget(self.label_path)
@@ -42,7 +43,6 @@ class App(QWidget):
         self.label_team_number = QLabel("Number of Teams:")
         self.combo_team_number = QComboBox()
         self.combo_team_number.addItems([str(i) for i in range(1, 6)])
-        self.combo_team_number.setCurrentIndex(4)  # Đặt giá trị mặc định là 5 (index 4)
         team_layout.addWidget(self.label_team_number)
         team_layout.addWidget(self.combo_team_number)
 
@@ -67,7 +67,7 @@ class App(QWidget):
 
         # Đặt vị trí của cửa sổ ở phía trên bên phải
         screen_geometry = QApplication.desktop().availableGeometry()
-        x = screen_geometry.width() - self.width() -10
+        x = screen_geometry.width() - self.width() - 10
         y = 0
         self.move(x, y)
 
@@ -91,6 +91,7 @@ class App(QWidget):
         file_to_check = os.path.join(path, "launcher.exe")
         if os.path.isfile(file_to_check):
             number_of_teams = self.combo_team_number.currentText()
+            self.save_settings(path, number_of_teams)
             self.button_start.setEnabled(False)  # Vô hiệu hóa nút Start
             self.button_stop.setEnabled(True)  # Kích hoạt nút Stop
             self.process = subprocess.Popen([sys.executable, 'rok.py', path, number_of_teams])
@@ -113,6 +114,21 @@ class App(QWidget):
         # Đảm bảo dừng quá trình khi đóng ứng dụng
         self.stop()
         event.accept()
+
+    def save_settings(self, path, number_of_teams):
+        settings = {
+            "path": path,
+            "number_of_teams": number_of_teams
+        }
+        with open(SETTINGS_FILE, 'w') as f:
+            json.dump(settings, f)
+
+    def load_settings(self):
+        if os.path.isfile(SETTINGS_FILE):
+            with open(SETTINGS_FILE, 'r') as f:
+                settings = json.load(f)
+                self.input_path.setText(settings.get("path", ""))
+                self.combo_team_number.setCurrentText(settings.get("number_of_teams", "5"))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
