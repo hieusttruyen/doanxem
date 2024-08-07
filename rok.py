@@ -144,7 +144,7 @@ def FindGems(window, directions, new):
                 if not locations:
                     return None
                 screen_x, screen_y = locations
-                if 0 < screen_x <= 650 and 750 < screen_y < 900:
+                if 0 < screen_x <= 620 and 770 < screen_y < 900:
                     return locations
                 pyautogui.click(screen_x, screen_y)
                 time.sleep(3)
