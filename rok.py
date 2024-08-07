@@ -4,12 +4,14 @@ from PIL import Image
 from lib import FindImgInWindow, FindImg, getWindow, PressKey
 from pywinauto.application import Application
 
+pyautogui.FAILSAFE = False
+
 
 def Reconnect(window):
     print("Kiểm tra kết nối...")
     try:
-        img = Image.open("./img/reconnect.png")
-        point = FindImgInWindow(window, img)
+
+        point = FindImgInWindow(window, img_reconnect)
         if point:
             print("Đang kết nối lại...")
             x, y = point
@@ -28,8 +30,7 @@ def StartRok(window_title):
         print("Khởi động launcher")
         app.start(path)
         time.sleep(5)
-        img_start = Image.open("./img/start.png")
-        img_map = Image.open("./img/map.png")
+
         sc = pyautogui.screenshot()
         point = FindImg(sc, img_start)
         if point:
@@ -52,16 +53,16 @@ def StartRok(window_title):
 def ResetHome(window):
     print("Reset zoom...")
     try:
-        pil_home = Image.open("./img/home.png")
+
         locations = FindImgInWindow(window, pil_home, threshold=0.7)
         if locations:
             PressKey("space")
-            time.sleep(2)
+            time.sleep(3)
             PressKey("space")
-            time.sleep(2)
+            time.sleep(3)
         else:
             PressKey("space")
-            time.sleep(2)
+            time.sleep(3)
     except Exception as ex:
         print("ERROR: ", ex)
 
@@ -115,14 +116,15 @@ def StartFarm(window, team_number):
                         x = 1550
                         y = 230 + yy
                         RunFarm(window, x, y, team_number, team["number"])
+                        break
     except Exception as ex:
         print("ERROR: ", ex)
 
 
 def CheckPass(window):
     try:
-        passs = Image.open("./img/pass_1.png")
-        locations = FindImgInWindow(window, passs, threshold=0.7)
+
+        locations = FindImgInWindow(window, img_passs, threshold=0.7)
         return bool(locations)
     except Exception as ex:
         print("ERROR: ", ex)
@@ -145,22 +147,27 @@ def FindGems(window, directions, new):
                 if 0 < screen_x <= 650 and 750 < screen_y < 900:
                     return locations
                 pyautogui.click(screen_x, screen_y)
-                time.sleep(2)
-                img_gem_map = Image.open("./img//gem_map.png")
+                time.sleep(3)
+
                 locations = FindImgInWindow(window, img_gem_map, threshold=0.7)
                 if locations:
                     print("Yeah thấy mở gem rồi...")
                     x, y = locations
                     pyautogui.click(x, y)
-                    time.sleep(2)
-                    img_gather = Image.open("./img//thuthap.png")
+                    time.sleep(3)
                     locations = FindImgInWindow(window, img_gather, threshold=0.9)
-                    return locations if locations else print("T_T Mỏ gem này đã có chủ")
+                    if locations:
+                        return locations
+                    else:
+                        print("T_T Mỏ gem này đã có chủ")
+                        PressKey("pgup")
+                        time.sleep(3)
+                        return None
                 else:
                     print("T_T Mỏ gem này đã có chủ")
-                PressKey("pgup")
-                time.sleep(2)
-                return None
+                    PressKey("pgup")
+                    time.sleep(3)
+                    return None
             except Exception as ex:
                 print("ERROR: ", ex)
 
@@ -168,7 +175,7 @@ def FindGems(window, directions, new):
             try:
                 for _ in range(count):
                     PressKey(direction, 0.25)
-                    time.sleep(2)
+                    time.sleep(3)
                     point = FindGem(window)
                     if point:
                         return point, direction, dem
@@ -179,13 +186,13 @@ def FindGems(window, directions, new):
         print("Tìm mỏ gem...")
         dem = 0
         PressKey("pgup")
-        time.sleep(2)
+        time.sleep(3)
 
-        if FindImgInWindow(window, img_earth):
-            print("Lỗi zoom...")
-            return None
         while True:
             Reconnect(window)
+            if FindImgInWindow(window, img_earth):
+                print("Lỗi zoom...")
+                return None, None, None
             if dem > 5:
                 dem = 0
             left, down, right, up = 2 + dem * 2, 1 + dem * 2, 1 + dem * 2, 2 + dem * 2
@@ -227,13 +234,13 @@ def FindGems(window, directions, new):
 
 def Farming(window, team_number, i):
     def NewTeam(window):
-        img_new = Image.open("./img//new.png")
+
         locations = FindImgInWindow(window, img_new, threshold=0.5)
         if locations:
             x, y = locations
-            time.sleep(2)
+            time.sleep(3)
             pyautogui.click(x, y)
-            img_1 = Image.open("./img//1.png")
+
             locations = FindImgInWindow(window, img_1, threshold=0.9)
             if locations:
                 x, y = locations
@@ -241,36 +248,35 @@ def Farming(window, team_number, i):
                 yy = 0
                 for i in range(5):
                     pyautogui.click(x, y + yy)
-                    time.sleep(2)
+                    time.sleep(3)
                     # print(x, y + yy)
                     yy = yy + 49
                 return True
         return False
 
     new = True
-    img_gather = Image.open("./img//thuthap.png")
+
     locations = FindImgInWindow(window, img_gather, threshold=0.5)
     if locations:
         x, y = locations
         teams = CheckTeams(window)
         pyautogui.click(x, y)
-        time.sleep(2)
+        time.sleep(3)
         if len(teams) < team_number:
             new = NewTeam(window)
         else:
             new = False
-            print("full")
+            # print("full")
             yy = 100 * i
             x = 1540
             y = 260 + yy
             pyautogui.click(x, y)
-            time.sleep(2)
-        img_running = (
-            Image.open("./img//running_new.png")
-            if new
-            else Image.open("./img//running.png")
-        )
-        locations = FindImgInWindow(window, img_running, threshold=0.8)
+            time.sleep(3)
+        if new:
+            img_f = img_running_new
+        else:
+            img_f = img_running
+        locations = FindImgInWindow(window, img_f, threshold=0.8)
         if locations:
             x, y = locations
             pyautogui.click(x, y)
@@ -288,12 +294,12 @@ def RunFarm(window, base_x, base_y, team_number, number_team):
         new = base_x == 0 and base_y == 0
         if not new:
             pyautogui.click(base_x, base_y)
-            time.sleep(2)
+            time.sleep(3)
         point, direction, dem = FindGems(window, directions, new)
         if point:
-            time.sleep(2)
+            time.sleep(3)
             # print("farm gem")
-            time.sleep(2)
+            time.sleep(3)
             if Farming(window, team_number, number_team):
                 time.sleep(5)
                 if CheckPass(window):
@@ -329,6 +335,17 @@ run = Image.open("./img/run.png")
 stop = Image.open("./img/dungchan.png")
 re = Image.open("./img/return.png")
 img_earth = Image.open("./img/earth.png")
+img_gem_map = Image.open("./img//gem_map.png")
+img_gather = Image.open("./img//thuthap.png")
+img_start = Image.open("./img/start.png")
+img_map = Image.open("./img/map.png")
+pil_home = Image.open("./img/home.png")
+img_reconnect = Image.open("./img/reconnect.png")
+img_passs = Image.open("./img/pass_1.png")
+img_new = Image.open("./img//new.png")
+img_1 = Image.open("./img//1.png")
+img_running_new = Image.open("./img//running_new.png")
+img_running = Image.open("./img//running.png")
 
 huong = "TOP"
 status = [
@@ -340,12 +357,11 @@ status = [
 team_number = 4
 
 
-def RunApp(path, team_number=5):
+def RunApp(team_number=5):
     try:
         window_title = "Rise of Kingdoms"
         window = getWindow(window_title)
         window.move_window(0, 0)
-        path_game = path + "\launcher.exe"
         if window:
             window.set_focus()
             while True:
@@ -373,4 +389,4 @@ if __name__ == "__main__":
         new_x = x - 315
         new_y = 200
         window.move_window(x=new_x, y=new_y, width=315, height=300)
-    RunApp(path, team_number)
+    RunApp(team_number)
