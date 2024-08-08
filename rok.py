@@ -18,9 +18,26 @@ def Reconnect(window):
             pyautogui.click(x, y)
             time.sleep(5)
             window_title = "Rise of Kingdoms"
-            StartRok(window_title)
+            window = getWindow(window_title)
+            if window:
+                time.sleep(30)
+                print("Kết nối thành công")
+            else:
+                StartRok(window_title)
     except Exception as ex:
         print("ERROR: ", ex)
+
+
+def ScrollMap(window):
+    left, top = (
+        window.rectangle().left,
+        window.rectangle().top,
+    )
+    pyautogui.moveTo(left + 800, 450 + top)
+    time.sleep(1)
+    pyautogui.scroll(-10)
+    pyautogui.scroll(-10)
+    pyautogui.scroll(-10)
 
 
 def StartRok(window_title):
@@ -160,12 +177,12 @@ def FindGems(window, directions, new):
                         return locations
                     else:
                         print("T_T Mỏ gem này đã có chủ")
-                        PressKey("pgup")
+                        ScrollMap(window)
                         time.sleep(3)
                         return None
                 else:
                     print("T_T Mỏ gem này đã có chủ")
-                    PressKey("pgup")
+                    ScrollMap(window)
                     time.sleep(3)
                     return None
             except Exception as ex:
@@ -185,7 +202,7 @@ def FindGems(window, directions, new):
 
         print("Tìm mỏ gem...")
         dem = 0
-        PressKey("pgup")
+        ScrollMap(window)
         time.sleep(3)
 
         while True:
@@ -303,6 +320,7 @@ def RunFarm(window, base_x, base_y, team_number, number_team):
             if Farming(window, team_number, number_team):
                 time.sleep(5)
                 if CheckPass(window):
+                    print("Pass")
                     match direction:
                         case "left":
                             if d_up == 2 and d_down == 2:
@@ -335,17 +353,17 @@ run = Image.open("./img/run.png")
 stop = Image.open("./img/dungchan.png")
 re = Image.open("./img/return.png")
 img_earth = Image.open("./img/earth.png")
-img_gem_map = Image.open("./img//gem_map.png")
-img_gather = Image.open("./img//thuthap.png")
+img_gem_map = Image.open("./img/gem_map.png")
+img_gather = Image.open("./img/thuthap.png")
 img_start = Image.open("./img/start.png")
 img_map = Image.open("./img/map.png")
 pil_home = Image.open("./img/home.png")
 img_reconnect = Image.open("./img/reconnect.png")
 img_passs = Image.open("./img/pass_1.png")
-img_new = Image.open("./img//new.png")
-img_1 = Image.open("./img//1.png")
-img_running_new = Image.open("./img//running_new.png")
-img_running = Image.open("./img//running.png")
+img_new = Image.open("./img/new.png")
+img_1 = Image.open("./img/1.png")
+img_running_new = Image.open("./img/running_new.png")
+img_running = Image.open("./img/running.png")
 
 huong = "TOP"
 status = [
@@ -359,17 +377,28 @@ team_number = 4
 
 def RunApp(team_number=5):
     try:
-        window_title = "Rise of Kingdoms"
-        window = getWindow(window_title)
-        window.move_window(0, 0)
-        if window:
-            window.set_focus()
-            while True:
+        while True:
+            window_title = "Rise of Kingdoms"
+            window = getWindow(window_title)
+
+            window_title_cmd = "Administrator:  cmd_rokauto"
+            window_cmd = getWindow(window_title_cmd)
+            if window_cmd:
+                x, y = pyautogui.size()
+                new_x = x - 315
+                new_y = 200
+                window_cmd.move_window(x=new_x, y=new_y, width=315, height=300)
+                window_cmd.set_focus()
+            if window:
+                # window.move_window(0, 0,1600, 900)
+                window.move_window(0, 0)
+
+                window.set_focus()
                 Reconnect(window)
                 StartFarm(window, team_number)
                 time.sleep(10)
-        else:
-            StartRok(window_title)
+            else:
+                StartRok(window_title)
     except Exception as ex:
         print("ERROR: ", ex)
 
@@ -382,11 +411,5 @@ if __name__ == "__main__":
         sys.exit(1)
     path = sys.argv[1]
     team_number = int(sys.argv[2])
-    window_title = "Administrator:  cmd_rokauto"
-    window = getWindow(window_title)
-    if window:
-        x, y = pyautogui.size()
-        new_x = x - 315
-        new_y = 200
-        window.move_window(x=new_x, y=new_y, width=315, height=300)
+
     RunApp(team_number)
