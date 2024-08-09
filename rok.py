@@ -1,26 +1,26 @@
 import time
 import pyautogui
 from PIL import Image
-from lib import FindImgInWindow, FindImg, getWindow, PressKey
+from lib import FindImgInWindow, FindImg, getWindow, PressKey, window_capture
 from pywinauto.application import Application
 
 pyautogui.FAILSAFE = False
 
 
 def Reconnect(window):
+
     print("Kiểm tra kết nối...")
     try:
-
         point = FindImgInWindow(window, img_reconnect)
         if point:
             print("Đang kết nối lại...")
             x, y = point
             pyautogui.click(x, y)
-            time.sleep(5)
+            time.sleep(60)
             window_title = "Rise of Kingdoms"
             window = getWindow(window_title)
             if window:
-                time.sleep(30)
+                time.sleep(60)
                 print("Kết nối thành công")
             else:
                 StartRok(window_title)
@@ -28,40 +28,36 @@ def Reconnect(window):
         print("ERROR: ", ex)
 
 
-def ScrollMap(window):
-    left, top = (
-        window.rectangle().left,
-        window.rectangle().top,
-    )
-    pyautogui.moveTo(left + 800, 450 + top)
-    time.sleep(1)
+def ScrollMap():
+    delay = int(sys.argv[3])
+    pyautogui.moveTo(800, 450)
+    time.sleep(delay)
     pyautogui.scroll(-10)
     pyautogui.scroll(-10)
-    pyautogui.scroll(-10)
+    # pyautogui.scroll(-10)
 
 
 def StartRok(window_title):
     try:
-        path = sys.argv[1] + "\launcher.exe"
+        path = sys.argv[1] + "/launcher.exe"
         app = Application()
         print("Khởi động launcher")
         app.start(path)
-        time.sleep(5)
-
+        time.sleep(60)
         sc = pyautogui.screenshot()
         point = FindImg(sc, img_start)
         if point:
             print("Khởi động rok")
             x, y = point
             pyautogui.click(x, y)
-            time.sleep(10)
+            time.sleep(60)
             window = getWindow(window_title)
             while not window.exists():
-                time.sleep(10)
+                time.sleep(20)
                 window = getWindow(window_title)
             window.set_focus()
             while not FindImgInWindow(window, img_map):
-                time.sleep(10)
+                time.sleep(20)
             print("Khởi động rok thành công")
     except Exception as ex:
         print("ERROR: ", ex)
@@ -70,16 +66,20 @@ def StartRok(window_title):
 def ResetHome(window):
     print("Reset zoom...")
     try:
-
+        delay = int(sys.argv[3])
         locations = FindImgInWindow(window, pil_home, threshold=0.7)
         if locations:
-            PressKey("space")
-            time.sleep(3)
-            PressKey("space")
-            time.sleep(3)
+            # PressKey("space",2)
+            pyautogui.press("space")
+            time.sleep(delay)
+            pyautogui.press("space")
+            # PressKey("space",2)
+            time.sleep(delay)
         else:
-            PressKey("space")
-            time.sleep(3)
+            # PressKey("space",2)
+            pyautogui.press("space")
+
+            time.sleep(delay)
     except Exception as ex:
         print("ERROR: ", ex)
 
@@ -87,12 +87,16 @@ def ResetHome(window):
 def CheckTeams(window):
     print("Kiểm tra quân dội...")
     try:
-        screenshot = window.capture_as_image()
-        crop_coordinates = (1530, 200, 1600, 530)
+        screenshot = window_capture()
+        # x, y = screenshot.size
+        crop_coordinates = (1600 - 80, 180, 1600, 550)
         cropped_image = screenshot.crop(crop_coordinates)
+        # cropped_image.show()
         image_width, image_height = cropped_image.size
         part_height = image_height // 5
         teams = []
+        team_number = int(sys.argv[2])
+        # print(team_number)
         for i in range(team_number + 1):
             bottom = (i + 1) * part_height
             cropped_part = cropped_image.crop((0, i * part_height, image_width, bottom))
@@ -105,24 +109,27 @@ def CheckTeams(window):
         print("ERROR: ", ex)
 
 
-def StartFarm(window, team_number):
+def StartFarm(window):
     print("Bắt đầu farm...")
+
     try:
         # ResetHome(window)
         teams = CheckTeams(window)
+        team_number = int(sys.argv[2])
+        delay = int(sys.argv[3])
+        # print(teams)
         for team in teams:
             match team["status"]:
                 case "return":
                     print("Dừng quân đội...")
                     yy = 65 * team["number"]
-                    x = 1550
                     y = 230 + yy
-                    pyautogui.click(x, y)
-                    time.sleep(4)
+                    pyautogui.click(1600 - 50, y)
+                    time.sleep(delay)
                     PressKey("S")
                     continue
         if len(teams) < team_number:
-            RunFarm(window, 0, 0, team_number, 0)
+            RunFarm(window, 0, 0, 0)
         else:
             for team in teams:
                 match team["status"]:
@@ -130,9 +137,8 @@ def StartFarm(window, team_number):
                         continue
                     case "stop":
                         yy = 65 * team["number"]
-                        x = 1550
                         y = 230 + yy
-                        RunFarm(window, x, y, team_number, team["number"])
+                        RunFarm(window, 1600 - 50, y, team["number"])
                         break
     except Exception as ex:
         print("ERROR: ", ex)
@@ -140,7 +146,6 @@ def StartFarm(window, team_number):
 
 def CheckPass(window):
     try:
-
         locations = FindImgInWindow(window, img_passs, threshold=0.7)
         return bool(locations)
     except Exception as ex:
@@ -149,8 +154,10 @@ def CheckPass(window):
 
 def FindGems(window, directions, new):
     try:
-        global huong
 
+        delay = int(sys.argv[3])
+        global huong
+        d = 0.25
         def FindGem(window):
             try:
                 gems = [img_gem, img_gem_2, img_gem_3]
@@ -164,35 +171,36 @@ def FindGems(window, directions, new):
                 if 0 < screen_x <= 620 and 770 < screen_y < 900:
                     return locations
                 pyautogui.click(screen_x, screen_y)
-                time.sleep(3)
+                time.sleep(delay)
 
                 locations = FindImgInWindow(window, img_gem_map, threshold=0.7)
                 if locations:
                     print("Yeah thấy mở gem rồi...")
                     x, y = locations
                     pyautogui.click(x, y)
-                    time.sleep(3)
-                    locations = FindImgInWindow(window, img_gather, threshold=0.9)
+                    time.sleep(delay)
+                    locations = FindImgInWindow(window, img_gather, threshold=0.7)
                     if locations:
                         return locations
                     else:
                         print("T_T Mỏ gem này đã có chủ")
-                        ScrollMap(window)
-                        time.sleep(3)
+                        ScrollMap()
+                        time.sleep(delay)
                         return None
                 else:
                     print("T_T Mỏ gem này đã có chủ")
-                    ScrollMap(window)
-                    time.sleep(3)
+                    ScrollMap()
+                    time.sleep(delay)
                     return None
             except Exception as ex:
                 print("ERROR: ", ex)
 
         def FindMap(window, count, direction):
+
             try:
                 for _ in range(count):
-                    PressKey(direction, 0.25)
-                    time.sleep(3)
+                    PressKey(direction, d)
+                    time.sleep(delay)
                     point = FindGem(window)
                     if point:
                         return point, direction, dem
@@ -202,8 +210,8 @@ def FindGems(window, directions, new):
 
         print("Tìm mỏ gem...")
         dem = 0
-        ScrollMap(window)
-        time.sleep(3)
+        ScrollMap()
+        time.sleep(delay)
 
         while True:
             Reconnect(window)
@@ -249,23 +257,27 @@ def FindGems(window, directions, new):
         print("ERROR: ", ex)
 
 
-def Farming(window, team_number, i):
+def Farming(window, i):
+    team_number = int(sys.argv[2])
+    delay = int(sys.argv[3])
+
     def NewTeam(window):
 
         locations = FindImgInWindow(window, img_new, threshold=0.5)
         if locations:
             x, y = locations
-            time.sleep(3)
+            time.sleep(delay)
             pyautogui.click(x, y)
-
-            locations = FindImgInWindow(window, img_1, threshold=0.9)
+            time.sleep(delay)
+            locations = FindImgInWindow(window, img_1, threshold=0.7)
             if locations:
                 x, y = locations
                 pyautogui.click(x, y)
+                time.sleep(delay)
                 yy = 0
                 for i in range(5):
                     pyautogui.click(x, y + yy)
-                    time.sleep(3)
+                    time.sleep(delay)
                     # print(x, y + yy)
                     yy = yy + 49
                 return True
@@ -278,7 +290,7 @@ def Farming(window, team_number, i):
         x, y = locations
         teams = CheckTeams(window)
         pyautogui.click(x, y)
-        time.sleep(3)
+        time.sleep(delay)
         if len(teams) < team_number:
             new = NewTeam(window)
         else:
@@ -288,12 +300,12 @@ def Farming(window, team_number, i):
             x = 1540
             y = 260 + yy
             pyautogui.click(x, y)
-            time.sleep(3)
+            time.sleep(delay)
         if new:
             img_f = img_running_new
         else:
             img_f = img_running
-        locations = FindImgInWindow(window, img_f, threshold=0.8)
+        locations = FindImgInWindow(window, img_f, threshold=0.6)
         if locations:
             x, y = locations
             pyautogui.click(x, y)
@@ -301,7 +313,8 @@ def Farming(window, team_number, i):
     return False
 
 
-def RunFarm(window, base_x, base_y, team_number, number_team):
+def RunFarm(window, base_x, base_y, number_team):
+    delay = int(sys.argv[3])
     d_down = 0
     d_up = 0
     directions = []
@@ -311,14 +324,14 @@ def RunFarm(window, base_x, base_y, team_number, number_team):
         new = base_x == 0 and base_y == 0
         if not new:
             pyautogui.click(base_x, base_y)
-            time.sleep(3)
+            time.sleep(delay)
         point, direction, dem = FindGems(window, directions, new)
         if point:
-            time.sleep(3)
+            time.sleep(delay)
             # print("farm gem")
-            time.sleep(3)
-            if Farming(window, team_number, number_team):
-                time.sleep(5)
+            time.sleep(delay)
+            if Farming(window, number_team):
+                time.sleep(delay)
                 if CheckPass(window):
                     print("Pass")
                     match direction:
@@ -372,10 +385,11 @@ status = [
     {"name": "return", "pil": re},
     {"name": "stop", "pil": stop},
 ]
-team_number = 4
+# team_number = 4
 
 
-def RunApp(team_number=5):
+def RunApp():
+
     try:
         while True:
             window_title = "Rise of Kingdoms"
@@ -388,14 +402,15 @@ def RunApp(team_number=5):
                 new_x = x - 315
                 new_y = 200
                 window_cmd.move_window(x=new_x, y=new_y, width=315, height=300)
-                window_cmd.set_focus()
+                # window_cmd.set_focus()
             if window:
-                # window.move_window(0, 0,1600, 900)
-                window.move_window(0, 0)
 
+                window.move_window(0, 0)
+                # window.move_window(0, 0)
                 window.set_focus()
+
                 Reconnect(window)
-                StartFarm(window, team_number)
+                StartFarm(window)
                 time.sleep(10)
             else:
                 StartRok(window_title)
@@ -406,10 +421,9 @@ def RunApp(team_number=5):
 import sys
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print("Usage: main.py <path> <team_number>")
         sys.exit(1)
     path = sys.argv[1]
     team_number = int(sys.argv[2])
-
-    RunApp(team_number)
+    RunApp()
