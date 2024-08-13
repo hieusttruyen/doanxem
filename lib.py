@@ -112,7 +112,7 @@ def FindImgInWindow(
         h, w = image.size
         if filtered_locations:
             a, b = filtered_locations[0][0], filtered_locations[0][1]
-            print(a, b)
+            # print(a, b)
             x = filtered_locations[0][0] + (h / 2)
             y = filtered_locations[0][1] + (w / 2)
             return x, y

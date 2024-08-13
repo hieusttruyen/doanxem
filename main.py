@@ -94,7 +94,7 @@ class App(QWidget):
             self.save_settings(path, number_of_teams)
             self.button_start.setEnabled(False)  # Vô hiệu hóa nút Start
             self.button_stop.setEnabled(True)  # Kích hoạt nút Stop
-            self.process = subprocess.Popen([sys.executable, 'rok.py', path, number_of_teams, '3'])
+            self.process = subprocess.Popen([sys.executable, 'autorok.py', path, number_of_teams, '3'])
         else:
             QMessageBox.warning(
                 self,

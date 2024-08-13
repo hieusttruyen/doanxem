@@ -69,15 +69,15 @@ def ResetHome(window):
         delay = int(sys.argv[3])
         locations = FindImgInWindow(window, pil_home, threshold=0.7)
         if locations:
-            # PressKey("space",2)
-            pyautogui.press("space")
+            PressKey("space",2)
+            # pyautogui.press("space")
             time.sleep(delay)
-            pyautogui.press("space")
-            # PressKey("space",2)
+            # pyautogui.press("space")
+            PressKey("space",2)
             time.sleep(delay)
         else:
-            # PressKey("space",2)
-            pyautogui.press("space")
+            PressKey("space",2)
+            # pyautogui.press("space")
 
             time.sleep(delay)
     except Exception as ex:
@@ -215,6 +215,7 @@ def FindGems(window, directions, new):
 
         while True:
             Reconnect(window)
+            window.set_focus()
             if FindImgInWindow(window, img_earth):
                 print("Lỗi zoom...")
                 return None, None, None
