@@ -127,6 +127,10 @@ class RokAuto:
                 time.sleep(self.delay_time)
                 PressKey("space", 2)
                 time.sleep(self.delay_time)
+            else:
+                PressKey("space", 2)
+                time.sleep(self.delay_time)
+
         except Exception as ex:
             logger.error("ERROR: Failed to reset zoom. %s", ex)
 
